@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import db.DB;
@@ -16,36 +17,60 @@ import db.DB;
 @RequestMapping("/analiseenade")
 public class EnadeController {
 	static Connection conn = null;
-	@GetMapping 
+	
+	/*@GetMapping("/getTeste") 
 	public List<String> get() {
-		PreparedStatement st = null;
-		ResultSet rs = null;
 		try {
-			conn = DB.getConnection();
-						
-			st = conn.prepareStatement("SELECT * FROM INSTITUTO_IES WHERE "
-						+ "MUNICIPIO = 'Fortaleza'");
-
-			rs = st.executeQuery();
-			List<String> list = new ArrayList<String>();
-			if(rs.next()) {
-				do {
-					System.out.print(rs.toString());
-					list.add(rs.getString("CODIGO_IES") + " - " +
-							rs.getString("NOME_IES"));
-				}while(rs.next());
-			}
-			
-			rs.close();
-			return list;
-			
+			return DaoEnade.get(conn);
 		}catch(Exception e) {
-			e.printStackTrace();
-			return null;
-		}finally {
-			System.out.println("\nFim requisição Get");
-			//DB.closeConnection();
+			throw e;
+		}
+	}*/
+	@GetMapping("/consulta-todas-areas")
+	public List<String> consultaAreas() throws Exception{
+		try {
+			return DaoEnade.consultarTodasAreas(conn);
+		}catch(Exception e) {
+			throw e;
 		}
 	}
+	
+	@GetMapping("/consulta-edicoes-por-area")
+	public List<String> consultaEdicoesPorArea(@RequestParam(name = "nomeArea") String nomeArea) throws Exception{
+		try {
+			return DaoEnade.consultaEdicoesArea(conn, nomeArea);
+		}catch(Exception e) {
+			throw e;
+		}
+	}
+	
+	@GetMapping("/consulta-todos-municipios")
+	public List<String> consultaMunicipios() throws Exception{
+		try {
+			return DaoEnade.consultarTodosMunicipios(conn);
+		}catch(Exception e) {
+			throw e;
+		}
+	}
+	
+	@GetMapping("/consulta-todos-ies")
+	public List<String> consultaTodosIES() throws Exception{
+		try {
+			return DaoEnade.consultarTodosIES(conn);
+		}catch(Exception e) {
+			throw e;
+		}
+	}
+	
+	@GetMapping("/consulta-dados-por-ano-municipio")
+	public List<String> consultaEdicoesPorAnoMunicipio(@RequestParam(name = "ano") String ano,@RequestParam(name="municipio") String municipio) throws Exception{
+		try {
+			return DaoEnade.consultarEdicoesAnoMunicipio(conn, ano, municipio);
+		}catch(Exception e) {
+			throw e;
+		}
+	}
+	
+	
 
 }

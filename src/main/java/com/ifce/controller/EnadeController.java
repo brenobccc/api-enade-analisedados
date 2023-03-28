@@ -62,6 +62,20 @@ public class EnadeController {
 		}
 	}
 	
+	@GetMapping("/consulta-dados-por-ano-municipio-area-nomeies")
+	public List<String> consultaEdicoesPorAnoMunicipio(
+			@RequestParam(name = "anoInicial") String anoInicial,
+			@RequestParam(name = "anoFinal") String anoFinal,
+			@RequestParam(name="municipio") String municipio,
+			@RequestParam(name="area") String area,
+			@RequestParam(name="nomeies") String nomeIes) throws Exception{
+		try {
+			return DaoEnade.consultarIndicesPorAnoMunicipioAreaNomeIES(conn, anoInicial, anoFinal, municipio, area, nomeIes);
+		}catch(Exception e) {
+			throw e;
+		}
+	}
+	
 	@GetMapping("/consulta-dados-por-ano-municipio")
 	public List<String> consultaEdicoesPorAnoMunicipio(@RequestParam(name = "ano") String ano,@RequestParam(name="municipio") String municipio) throws Exception{
 		try {

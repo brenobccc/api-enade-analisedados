@@ -48,10 +48,8 @@ public class DaoEnade {
 		try {
 			conn = DB.getConnection();
 						
-			st = conn.prepareStatement("SELECT CODIGO_AREA, NOME_AREA "
-					+ "FROM AREA_AVALIACAO "
-					+ "INNER JOIN EXAME_ENADE ON CODIGO_AREA = FK_CODIGO_AREA "
-					+ "GROUP BY NOME_AREA;");
+			st = conn.prepareStatement("SELECT DISTINCT NOME_AREA, CODIGO_AREA FROM AREA_AVALIACAO "
+					+ "INNER JOIN EXAME_ENADE ON CODIGO_AREA = FK_CODIGO_AREA ORDER BY NOME_AREA;");
 
 			rs = st.executeQuery();
 			List<String> list = new ArrayList<String>();
@@ -84,11 +82,12 @@ public class DaoEnade {
 			if(area==null || area.trim() == "")
 				return list;
 			
-			st = conn.prepareStatement("SELECT ANO, NOME_AREA "
+			st = conn.prepareStatement("SELECT EXAME_ENADE.ANO, AREA_AVALIACAO.NOME_AREA, AREA_AVALIACAO.CODIGO_AREA "
 					+ "FROM AREA_AVALIACAO "
-					+ "INNER JOIN EXAME_ENADE ON CODIGO_AREA = FK_CODIGO_AREA "
-					+ "where NOME_AREA LIKE '"+area+"%' "
-					+ "GROUP BY ANO ORDER BY ANO DESC;");
+					+ "INNER JOIN EXAME_ENADE ON AREA_AVALIACAO.CODIGO_AREA = EXAME_ENADE.FK_CODIGO_AREA "
+					+ "WHERE TRIM(AREA_AVALIACAO.NOME_AREA) = '"+area.trim()+"' "
+					+ "GROUP BY EXAME_ENADE.ANO, AREA_AVALIACAO.NOME_AREA, AREA_AVALIACAO.CODIGO_AREA "
+					+ "ORDER BY EXAME_ENADE.ANO DESC;");
 
 			rs = st.executeQuery();
 			if(rs.next()) {
@@ -142,14 +141,16 @@ public class DaoEnade {
 		try {
 			conn = DB.getConnection();
 						
-			st = conn.prepareStatement("SELECT DISTINCT NOME_IES FROM INSTITUTO_IES ORDER BY CODIGO_IES, NOME_IES;");
+			st = conn.prepareStatement("SELECT DISTINCT NOME_IES, SIGLA_IES FROM INSTITUTO_IES ORDER BY NOME_IES;");
 
 			rs = st.executeQuery();
 			List<String> list = new ArrayList<String>();
 			if(rs.next()) {
 				do {
 					//System.out.print(rs.toString());
-					list.add(rs.getString("NOME_IES"));
+					list.add(rs.getString("NOME_IES") + 
+							(rs.getString("SIGLA_IES") != null &&
+							!rs.getString("SIGLA_IES").trim().equals("") ? (" - " + rs.getString("SIGLA_IES")) : ""  ));
 				}while(rs.next());
 			}
 			
@@ -183,8 +184,7 @@ public class DaoEnade {
 					+ "FROM EXAME_ENADE "
 					+ "INNER JOIN AREA_AVALIACAO ON CODIGO_AREA = FK_CODIGO_AREA "
 					+ "INNER JOIN INSTITUTO_IES ON CODIGO_IES = FK_CODIGO_IES "
-					+ "WHERE ANO = "+ano.trim()+" AND MUNICIPIO = '"+municipio+"' AND FK_MUNICIPIO = '"+municipio+"' "
-					+ "GROUP BY  FK_CODIGO_IES, NOME_IES, NOME_AREA;");
+					+ "WHERE ANO = "+ano.trim()+" AND MUNICIPIO = '"+municipio+"' AND FK_MUNICIPIO = '"+municipio+"'");
 
 			rs = st.executeQuery();
 			if(rs.next()) {
@@ -197,6 +197,54 @@ public class DaoEnade {
 					rs.getString("MODALIDADE_ENSINO") + ","+ rs.getString("CONCEITO_ENADE_CONTINUO").trim()+","+
 					rs.getString("NUMERO_CONCLUINTES_PARTICIPANTES") + ","+
 					rs.getString("NUMERO_CONCLUINTES_INSCRITOS").trim()+
+					"]";
+					list.add(arrayValores);
+				}while(rs.next());
+			}
+			
+			rs.close();
+			return list;
+			
+		}catch(Exception e) {
+			throw e;
+		}finally {
+			System.out.println("\n Fim requisição | consultar Areas");
+		}
+	}
+
+	public static List<String> consultarIndicesPorAnoMunicipioAreaNomeIES(Connection conn, String anoInicial, String anoFinal, String municipio,
+			String area, String nomeIes) throws Exception {
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try {
+			conn = DB.getConnection();
+						
+			List<String> list = new ArrayList<String>();
+			
+			if(anoInicial==null || anoInicial.trim() == "")
+				return list;
+			if(anoFinal==null || anoFinal.trim() == "")
+				return list;
+			if(municipio==null || municipio.trim() == "")
+				return list;
+			if(area==null || area.trim() == "")
+				return list;
+			if(nomeIes==null || nomeIes.trim() == "")
+				return list;
+			
+			st = conn.prepareStatement("SELECT EDICAO AS Edição, NOME_IES AS InstitutoEnsinoSuperior, "
+					+ "NOME_AREA AS ÁreaDeAvaliação, CONCEITO_ENADE_CONTINUO AS Nota FROM EXAME_ENADE "
+					+ "INNER JOIN AREA_AVALIACAO ON CODIGO_AREA = FK_CODIGO_AREA INNER JOIN INSTITUTO_IES ON CODIGO_IES = FK_CODIGO_IES "
+					+ "WHERE ANO BETWEEN +'"+anoInicial+"' AND '"+anoFinal+"'  AND MUNICIPIO = '"+municipio+"' AND FK_MUNICIPIO = '"+municipio+"' "
+					+ "AND TRIM(NOME_AREA) = '"+area+"' AND TRIM(NOME_IES) = '"+nomeIes+"';");
+
+			rs = st.executeQuery();
+			if(rs.next()) {
+				do {
+					System.out.print(rs.toString());
+					String arrayValores = "["+
+					rs.getString("Edição") + ","+ rs.getString("InstitutoEnsinoSuperior") + "," +
+					rs.getString("ÁreaDeAvaliação") + "," + rs.getString("Nota") +
 					"]";
 					list.add(arrayValores);
 				}while(rs.next());

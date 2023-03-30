@@ -212,14 +212,14 @@ public class DaoEnade {
 		}
 	}
 
-	public static List<String> consultarIndicesPorAnoMunicipioAreaNomeIES(Connection conn, String anoInicial, String anoFinal, String municipio,
+	public static List<String[]> consultarIndicesPorAnoMunicipioAreaNomeIES(Connection conn, String anoInicial, String anoFinal, String municipio,
 			String area, String nomeIes) throws Exception {
 		PreparedStatement st = null;
 		ResultSet rs = null;
 		try {
 			conn = DB.getConnection();
 						
-			List<String> list = new ArrayList<String>();
+			List<String[]> list = new ArrayList<String[]>();
 			
 			if(anoInicial==null || anoInicial.trim() == "")
 				return list;
@@ -242,10 +242,7 @@ public class DaoEnade {
 			if(rs.next()) {
 				do {
 					System.out.print(rs.toString());
-					String arrayValores = "["+
-					rs.getString("Edição") + ","+ rs.getString("InstitutoEnsinoSuperior") + "," +
-					rs.getString("ÁreaDeAvaliação") + "," + rs.getString("Nota") +
-					"]";
+					String[] arrayValores = {rs.getString("Edição"),rs.getString("Nota")};
 					list.add(arrayValores);
 				}while(rs.next());
 			}

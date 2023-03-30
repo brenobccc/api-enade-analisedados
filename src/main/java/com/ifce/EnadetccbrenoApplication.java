@@ -1,5 +1,5 @@
 package com.ifce;
-import com.ifce.controller.CorsConfiguration;
+import com.ifce.controller.Config;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Import;
 import db.DB;
 
 @SpringBootApplication
-@Import(CorsConfiguration.class)
+@Import(Config.class)
 public class EnadetccbrenoApplication {
 
 	public static void main(String[] args) {

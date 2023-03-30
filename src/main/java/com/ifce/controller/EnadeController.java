@@ -1,17 +1,16 @@
 package com.ifce.controller;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import db.DB;
 
 @RestController
 @RequestMapping("/analiseenade")
@@ -61,16 +60,72 @@ public class EnadeController {
 			throw e;
 		}
 	}
-	
-	@GetMapping("/consulta-dados-por-ano-municipio-area-nomeies")
-	public List<String> consultaEdicoesPorAnoMunicipio(
+	@GetMapping("/consulta-dados-por-ano-municipio-area-nomeies-individual")
+	public List<String[]> consultaEdicoesPorAnoMunicipio(
 			@RequestParam(name = "anoInicial") String anoInicial,
 			@RequestParam(name = "anoFinal") String anoFinal,
 			@RequestParam(name="municipio") String municipio,
 			@RequestParam(name="area") String area,
 			@RequestParam(name="nomeies") String nomeIes) throws Exception{
 		try {
-			return DaoEnade.consultarIndicesPorAnoMunicipioAreaNomeIES(conn, anoInicial, anoFinal, municipio, area, nomeIes);
+			
+			
+			List<String[]> ies1 = DaoEnade.consultarIndicesPorAnoMunicipioAreaNomeIES(conn, anoInicial, anoFinal, municipio, area, nomeIes);
+			return ies1;
+		}catch(Exception e) {
+			throw e;
+		}
+	}
+	
+	@GetMapping("/consulta-dados-por-ano-municipio-area-nomeies")
+	public List<Object> consultaEdicoesPorAnoMunicipio(
+			@RequestParam(name = "anoInicial") String anoInicial,
+			@RequestParam(name = "anoFinal") String anoFinal,
+			@RequestParam(name="municipio1") String municipio1,
+			@RequestParam(name="municipio2") String municipio2,
+			@RequestParam(name="area") String area,
+			@RequestParam(name="nomeies1") String nomeIes1,
+			@RequestParam(name="nomeies2") String nomeIes2) throws Exception{
+		try {
+			List<String[]> ies1 = DaoEnade.consultarIndicesPorAnoMunicipioAreaNomeIES(conn, anoInicial, anoFinal, municipio1, area, nomeIes1);
+			List<String[]> ies2 = DaoEnade.consultarIndicesPorAnoMunicipioAreaNomeIES(conn, anoInicial, anoFinal, municipio2, area, nomeIes2);
+			
+			Set<String> anosSet = new HashSet<String>();
+			for (String[] item : ies1) {
+				anosSet.add(item[0]);
+			}
+			for (String[] item : ies2) {
+				anosSet.add(item[0]);
+			}
+			
+			List<String> anos = new ArrayList<String>(anosSet);
+			Collections.sort(anos);
+			
+			List<List<String>> notas = new ArrayList<List<String>>();
+			for (int i = 0; i < 2; i++) {
+				List<String[]> ies = (i == 0) ? ies1 : ies2;
+				List<String> notasIes = new ArrayList<String>();
+				for (String ano : anos) {
+					boolean encontrado = false;
+					for (String[] item : ies) {
+						if (item[0].equals(ano)) {
+							notasIes.add(item[1]);
+							encontrado = true;
+							break;
+						}
+					}
+					if (!encontrado) {
+						notasIes.add("undefined");
+					}
+				}
+				notas.add(notasIes);
+			}
+			
+			List<Object> l = new ArrayList<Object>();
+			l.add(anos);
+			l.add(notas.get(0));
+			l.add(notas.get(1));
+			return l;
 		}catch(Exception e) {
 			throw e;
 		}

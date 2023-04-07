@@ -56,7 +56,7 @@ public class DaoEnade {
 			if(rs.next()) {
 				do {
 					System.out.print(rs.toString());
-					String arrayValores = "[" +rs.getString("CODIGO_AREA") + ","+ rs.getString("NOME_AREA")+"]";
+					String arrayValores = rs.getString("NOME_AREA");
 					list.add(arrayValores);
 				}while(rs.next());
 			}
@@ -93,7 +93,7 @@ public class DaoEnade {
 			if(rs.next()) {
 				do {
 					System.out.print(rs.toString());
-					String arrayValores = "[" +rs.getString("ANO") + ","+ rs.getString("NOME_AREA").trim()+"]";
+					String arrayValores = rs.getString("ANO");
 					list.add(arrayValores);
 				}while(rs.next());
 			}
@@ -135,22 +135,23 @@ public class DaoEnade {
 		}
 	}
 
-	public static List<String> consultarTodosIES(Connection conn) throws Exception {
+	public static List<String> consultarTodosIES(Connection conn,String area) throws Exception {
 		PreparedStatement st = null;
 		ResultSet rs = null;
 		try {
 			conn = DB.getConnection();
 						
-			st = conn.prepareStatement("SELECT DISTINCT NOME_IES, SIGLA_IES FROM INSTITUTO_IES ORDER BY NOME_IES;");
+			st = conn.prepareStatement("SELECT DISTINCT NOME_IES FROM EXAME_ENADE "+
+					"INNER JOIN AREA_AVALIACAO ON CODIGO_AREA = FK_CODIGO_AREA "+
+					"INNER JOIN INSTITUTO_IES ON CODIGO_IES = FK_CODIGO_IES " +
+					"WHERE TRIM(NOME_AREA) = '"+area.trim()+"' ORDER BY NOME_IES;");
 
 			rs = st.executeQuery();
 			List<String> list = new ArrayList<String>();
 			if(rs.next()) {
 				do {
 					//System.out.print(rs.toString());
-					list.add(rs.getString("NOME_IES") + 
-							(rs.getString("SIGLA_IES") != null &&
-							!rs.getString("SIGLA_IES").trim().equals("") ? (" - " + rs.getString("SIGLA_IES")) : ""  ));
+					list.add(rs.getString("NOME_IES"));
 				}while(rs.next());
 			}
 			
@@ -232,7 +233,7 @@ public class DaoEnade {
 			if(nomeIes==null || nomeIes.trim() == "")
 				return list;
 			
-			st = conn.prepareStatement("SELECT EDICAO AS Edição, NOME_IES AS InstitutoEnsinoSuperior, "
+			st = conn.prepareStatement("SELECT DISTINCT EDICAO AS Edição, NOME_IES AS InstitutoEnsinoSuperior, "
 					+ "NOME_AREA AS ÁreaDeAvaliação, CONCEITO_ENADE_CONTINUO AS Nota FROM EXAME_ENADE "
 					+ "INNER JOIN AREA_AVALIACAO ON CODIGO_AREA = FK_CODIGO_AREA INNER JOIN INSTITUTO_IES ON CODIGO_IES = FK_CODIGO_IES "
 					+ "WHERE ANO BETWEEN +'"+anoInicial+"' AND '"+anoFinal+"'  AND MUNICIPIO = '"+municipio+"' AND FK_MUNICIPIO = '"+municipio+"' "

@@ -53,9 +53,9 @@ public class EnadeController {
 	}
 	
 	@GetMapping("/consulta-todos-ies")
-	public List<String> consultaTodosIES() throws Exception{
+	public List<String> consultaTodosIES(@RequestParam(name = "nomeArea") String nomeArea) throws Exception{
 		try {
-			return DaoEnade.consultarTodosIES(conn);
+			return DaoEnade.consultarTodosIES(conn,nomeArea);
 		}catch(Exception e) {
 			throw e;
 		}

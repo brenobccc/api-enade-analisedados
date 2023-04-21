@@ -257,4 +257,51 @@ public class DaoEnade {
 			System.out.println("\n Fim requisição | consultar Areas");
 		}
 	}
+	
+	public static List<String[]> consultarIndicesPorAnoMunicipioAreaNomeIES2(Connection conn, String anoInicial, String anoFinal, String municipio,
+			String area, String nomeIes) throws Exception {
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try {
+			conn = DB.getConnection();
+						
+			List<String[]> list = new ArrayList<String[]>();
+			
+			if(anoInicial==null || anoInicial.trim() == "")
+				return list;
+			if(anoFinal==null || anoFinal.trim() == "")
+				return list;
+			if(municipio==null || municipio.trim() == "")
+				return list;
+			if(area==null || area.trim() == "")
+				return list;
+			if(nomeIes==null || nomeIes.trim() == "")
+				return list;
+			
+			st = conn.prepareStatement("SELECT DISTINCT EDICAO AS Edição, NOME_IES AS InstitutoEnsinoSuperior, "
+					+ "NOME_AREA AS ÁreaDeAvaliação, NUMERO_CONCLUINTES_INSCRITOS, NUMERO_CONCLUINTES_PARTICIPANTES, CONCEITO_ENADE_CONTINUO AS Nota FROM EXAME_ENADE "
+					+ "INNER JOIN AREA_AVALIACAO ON CODIGO_AREA = FK_CODIGO_AREA INNER JOIN INSTITUTO_IES ON CODIGO_IES = FK_CODIGO_IES "
+					+ "WHERE ANO BETWEEN +'"+anoInicial+"' AND '"+anoFinal+"'  AND MUNICIPIO = '"+municipio+"' AND FK_MUNICIPIO = '"+municipio+"' "
+					+ "AND TRIM(NOME_AREA) = '"+area+"' AND TRIM(NOME_IES) = '"+nomeIes+"';");
+
+			rs = st.executeQuery();
+			if(rs.next()) {
+				do {
+					System.out.print(rs.toString());
+					String[] arrayValores = {rs.getString("Edição"),rs.getString("Nota"), 
+							rs.getString("NUMERO_CONCLUINTES_INSCRITOS"), 
+							rs.getString("NUMERO_CONCLUINTES_PARTICIPANTES")};
+					list.add(arrayValores);
+				}while(rs.next());
+			}
+			
+			rs.close();
+			return list;
+			
+		}catch(Exception e) {
+			throw e;
+		}finally {
+			System.out.println("\n Fim requisição | consultar Areas");
+		}
+	}
 }

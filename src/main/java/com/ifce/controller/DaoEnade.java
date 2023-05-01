@@ -304,4 +304,37 @@ public class DaoEnade {
 			System.out.println("\n Fim requisição | consultar Areas");
 		}
 	}
+
+	public static List<String> consultaMunicipios(Connection conn, String nomeArea, String nomeIes) throws Exception {
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		List<String> list = null;
+		try {
+			conn = DB.getConnection();
+			list = new ArrayList<String>();
+			
+			st = conn.prepareStatement("SELECT DISTINCT MUNICIPIO FROM AREA_AVALIACAO "
+					+ "INNER JOIN EXAME_ENADE ON EXAME_ENADE.FK_CODIGO_AREA = AREA_AVALIACAO.CODIGO_AREA "
+					+ "INNER JOIN INSTITUTO_IES ON INSTITUTO_IES.CODIGO_IES = EXAME_ENADE.FK_CODIGO_IES "
+					+ "WHERE TRIM(NOME_IES) = ? "
+					+ "AND TRIM(NOME_AREA) = ?  AND MUNICIPIO = FK_MUNICIPIO ORDER BY MUNICIPIO;"); 
+			
+			st.setString(1, nomeIes);
+			st.setString(2, nomeArea);
+			
+			rs = st.executeQuery();
+			if(rs.next()) {
+				do {
+					list.add(rs.getString("MUNICIPIO"));
+				}while(rs.next());
+			}
+			return list;
+		}catch(Exception e) {
+			throw e;
+		}finally {	
+			if(rs!=null) {
+				rs.close();				
+			}
+		}
+	}
 }
